@@ -46,7 +46,7 @@ const filePath = './src/files/file.md';
 extractLinksFromFile(filePath)
   .then((links) => {
     console.log('Links encontrados no arquivo:');
-    console.log(links);
+    console.table(links);
   })
   .catch((error) => {
     console.error(error);
