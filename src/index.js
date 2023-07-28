@@ -1,6 +1,6 @@
-const { fail } = require("assert");
 const fs = require("fs");
 const path = require("path");
+
 
 function lerArquivos(path) {
   return new Promise((resolve, reject) => {
@@ -9,7 +9,7 @@ function lerArquivos(path) {
         console.error(err);
         return reject(`Erro na leitura do arquivo: ${err}`);
       }
-      const linkRegex = /\[([^[\]]+?)\]\((https?:\/\/[^\s?#.]+\S+?)\)/gm;                                       
+      const linkRegex = /\[([^[\]]+?)\]\((https?:\/\/[^\s?#.]+\S+?)\)/gm;
 
       let match;
       const darMatch = [];
@@ -45,7 +45,7 @@ function lerDiretorioMd(diretorio) {
         .filter((data) => data.endsWith(".md"))
         .map((data) => lerArquivos(path.join(diretorio, data)));
 
-      // console.log(listaArquivosMd);
+      //console.log(listaArquivosMd);
       resolve(listaArquivosMd);
     });
   });
@@ -53,14 +53,11 @@ function lerDiretorioMd(diretorio) {
 
 /*const caminhoDoDiretorio = path.join(__dirname, "arquivos");
 lerDiretorioMd(caminhoDoDiretorio);*/
-
 function validateLinks(arrayLinks) {
   return Promise.all(
       arrayLinks.map((link) => {
           return fetch(link.url)
               .then((response) => {
-  /*                 link.status = response.status;
-                  link.ok = response.ok ? 'ok' : 'fail'; */
                   return {
                     ...link,
                     status : response.status, 
@@ -68,8 +65,6 @@ function validateLinks(arrayLinks) {
                   };
               })
               .catch(() => {
- /*                  link.status = 404;
-                  link.ok = false; */
                   return {
                     ...link,
                     status : 404, 
@@ -80,30 +75,62 @@ function validateLinks(arrayLinks) {
   );
 }
 
-function mdLinks(path, option) {
+
+function getStats(links) {
+  const totalLinks = links.length;
+  const uniqueLinks = Array.from(new Set(links.map((link) => link.url))).length;
+  return { totalLinks, uniqueLinks };
+}
+
+function mdLinks(path, options) {
   return new Promise((resolve, reject) => {
     fs.stat(path, (err, stats) => {
       if (err) {
         return reject(`Erro: ${err}`);
       } else if (stats.isFile()) {
-        lerArquivos(path) // Chame lerArquivos para obter os links do arquivo
+        lerArquivos(path)
           .then((links) => {
-            if (option && option.validate) {
-              return validateLinks(links); // Chame validateLinks se a opção "validate" estiver presente
+            if (options && options.validate) {
+              return validateLinks(links)
+                .then((validatedLinks) => {
+                  const statsResult = getStats(validatedLinks);
+                  const totalBrokenLinks = validatedLinks.filter((link) => link.ok === "fail").length;
+                  resolve({ links: validatedLinks, stats: { ...statsResult, totalBrokenLinks } });
+                });
             }
-            return links;
+            return { links, stats: getStats(links) };
           })
-          .then(resolve)
+          .then(({ links, stats }) => {
+            if (options && options.stats) {
+              resolve({ ...stats, totalBrokenLinks: 0 });
+            } else {
+              resolve(links);
+            }
+          })
           .catch(reject);
       } else if (stats.isDirectory()) {
-        lerDiretorioMd(path) // Chame lerDiretorioMd para obter os links dos arquivos Markdown
-          .then((links) => {
-            if (option && option.validate) {
-              return validateLinks(links); // Chame validateLinks se a opção "validate" estiver presente
+        lerDiretorioMd(path)
+          .then((linksArray) => {
+            const links = linksArray.flat();
+            if (options && options.validate) {
+              return validateLinks(links)
+                .then((validatedLinks) => {
+                  const statsResult = getStats(validatedLinks);
+                  const totalBrokenLinks = validatedLinks.filter((link) => link.ok === "fail").length;
+                  resolve({ links: validatedLinks, stats: { ...statsResult, totalBrokenLinks } });
+                });
             }
-            return links;
+            return { links, stats: getStats(links) };
           })
-          .then(resolve)
+          .then(({ links, stats }) => {
+            if (options && options.stats) {
+              resolve({ ...stats, totalBrokenLinks: 0 });
+            } else if (options && options.validate) {
+              resolve(links);
+            } else {
+              resolve(links);
+            }
+          })
           .catch(reject);
       }
     });
