@@ -1,16 +1,13 @@
-const { mdLinks } = require("./index");
+#!/usr/bin/env node
 
-const path = process.argv[2];
+const { mdLinks } = require("./index.js");
+const path = require("path");
 
-const options = {
-  validate: process.argv.includes("--validate"),
-  stats: process.argv.includes("--stats"),
-};
-
-mdLinks(path, options).then(linksEncontrados);
-
-/*mdLinks("./some/example.md", { validate: true })
-  .then(links => {
-    // => [{ href, text, file, status, ok }, ...]
+const caminhoDoArquivo = path.join(__dirname, "arquivos", "arquivo.md");
+mdLinks(caminhoDoArquivo, { validate: true })
+  .then((links) => {
+    console.log(links); // Array de links com informações de validação
   })
-  .catch(console.error);*/
+  .catch((err) => {
+    console.error(err);
+  });

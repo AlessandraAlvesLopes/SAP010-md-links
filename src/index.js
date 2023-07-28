@@ -1,3 +1,4 @@
+const { fail } = require("assert");
 const fs = require("fs");
 const path = require("path");
 
@@ -8,24 +9,29 @@ function lerArquivos(path) {
         console.error(err);
         return reject(`Erro na leitura do arquivo: ${err}`);
       }
+      const linkRegex = /\[([^[\]]+?)\]\((https?:\/\/[^\s?#.]+\S+?)\)/gm;                                       
 
-      const linkRegex = /\[([^[\]]+?)\]\((https?:\/\/[^\s?#.]+\S+?)\)/gm;
-      let match;        
-
-      const linksEncontrados = [];
-
+      let match;
+      const darMatch = [];
       while ((match = linkRegex.exec(data)) !== null) {
-        linksEncontrados.push({
-          text: match[1],
-          url: match[2],
-          file: path,
-        });
+        darMatch.push(match);
       }
 
+      const linksEncontrados = darMatch.map((match) => ({
+        text: match[1],
+        url: match[2],
+        file: path,
+      }));
+
+      //console.log(linksEncontrados);
       resolve(linksEncontrados);
     });
   });
 }
+
+/* Apagar depois que tiver CLI pronta & os console.log
+const caminhoDoArquivo = path.join(__dirname, "arquivos", "arquivo.md");
+lerArquivos(caminhoDoArquivo);*/
 
 function lerDiretorioMd(diretorio) {
   return new Promise((resolve, reject) => {
@@ -37,41 +43,71 @@ function lerDiretorioMd(diretorio) {
 
       const listaArquivosMd = data
         .filter((data) => data.endsWith(".md"))
-        .map((data) => path.join(diretorio, data));
+        .map((data) => lerArquivos(path.join(diretorio, data)));
 
+      // console.log(listaArquivosMd);
       resolve(listaArquivosMd);
     });
   });
 }
 
-const caminhoDoArquivo = path.join(__dirname, "arquivos", "arquivo.md");
-lerArquivos(caminhoDoArquivo)
-  .then((linksDoArquivo) => {
-    console.log("Links encontrados no arquivo:");
-    console.log(linksDoArquivo);
+/*const caminhoDoDiretorio = path.join(__dirname, "arquivos");
+lerDiretorioMd(caminhoDoDiretorio);*/
 
-    const caminhoDoDiretorio = path.join(__dirname, "arquivos");
-    return lerDiretorioMd(caminhoDoDiretorio);
-  })
-  .then((linksDoDiretorio) => {
-    console.log("Links encontrados nos arquivos do diretório:");
-    console.log(linksDoDiretorio);
-  })
-  .catch((err) => console.error(err));
+function validateLinks(arrayLinks) {
+  return Promise.all(
+      arrayLinks.map((link) => {
+          return fetch(link.url)
+              .then((response) => {
+  /*                 link.status = response.status;
+                  link.ok = response.ok ? 'ok' : 'fail'; */
+                  return {
+                    ...link,
+                    status : response.status, 
+                    ok: response.ok ? 'ok' : 'fail'
+                  };
+              })
+              .catch(() => {
+ /*                  link.status = 404;
+                  link.ok = false; */
+                  return {
+                    ...link,
+                    status : 404, 
+                    ok: 'fail'
+                  };
+              });
+      })
+  );
+}
 
-  function mdLinks(path) {
-    return new Promise((resolve, reject) => {
-      fs.stat(path, (err, stats) => {
-        if (err) {
-          return reject(`Erro: ${err}`);
-        } else if (stats.isFile()) {
-          //console.log(lerArquivos);
-          resolve(lerArquivos(path));
-        } else if (stats.isDirectory()) {
-          resolve(lerDiretorioMd(diretorio));
-        }
-      });
+function mdLinks(path, option) {
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, stats) => {
+      if (err) {
+        return reject(`Erro: ${err}`);
+      } else if (stats.isFile()) {
+        lerArquivos(path) // Chame lerArquivos para obter os links do arquivo
+          .then((links) => {
+            if (option && option.validate) {
+              return validateLinks(links); // Chame validateLinks se a opção "validate" estiver presente
+            }
+            return links;
+          })
+          .then(resolve)
+          .catch(reject);
+      } else if (stats.isDirectory()) {
+        lerDiretorioMd(path) // Chame lerDiretorioMd para obter os links dos arquivos Markdown
+          .then((links) => {
+            if (option && option.validate) {
+              return validateLinks(links); // Chame validateLinks se a opção "validate" estiver presente
+            }
+            return links;
+          })
+          .then(resolve)
+          .catch(reject);
+      }
     });
-  }
-  
-  module.exports = { mdLinks };
+  });
+}
+
+module.exports = { mdLinks };
