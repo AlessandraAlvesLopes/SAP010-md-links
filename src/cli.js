@@ -21,9 +21,9 @@ if (isValidate && isStats) {
   mdLinks(caminhoDoArquivo, { validate: true, stats: true })
     .then((result) => {
       const stats = result.stats;
-      console.log(
-        `{ totalLinks: ${stats.totalLinks}, uniqueLinks: ${stats.uniqueLinks}, totalBrokenLinks: ${stats.totalBrokenLinks} }`
-      );
+      console.log( ` totalLinks: ${stats.totalLinks}`);
+      console.log( ` uniqueLinks: ${stats.uniqueLinks}`);
+      console.log( ` totalBrokenLinks: ${stats.totalBrokenLinks}`);
     })
     .catch((err) => {
       console.error(err);
@@ -31,9 +31,8 @@ if (isValidate && isStats) {
 } else if (isStats) {
   mdLinks(caminhoDoArquivo, { validate: false, stats: true })
     .then((result) => {
-      console.log(
-        `{ totalLinks: ${result.totalLinks}, uniqueLinks: ${result.uniqueLinks} }`
-      );
+      console.log( ` totalLinks: ${result.totalLinks}`);
+      console.log( ` uniqueLinks: ${result.uniqueLinks}`);
     })
     .catch((err) => {
       console.error(err);
