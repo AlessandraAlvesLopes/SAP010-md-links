@@ -9,10 +9,6 @@ function printLink(link) {
   console.log(link);
 }
 
-/*function printStats(stats) {
-  console.log(stats);
-}*/
-
 const options = process.argv.slice(3);
 const isValidate = options.includes("--validate");
 const isStats = options.includes("--stats");
