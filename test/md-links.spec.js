@@ -1,4 +1,4 @@
-const {lerArquivos, lerDiretorioMd} = require('../src/index');
+const {lerArquivos, lerDiretorioMd, validateLinks, mdLinks} = require('../src/index');
 const path = require('path');
 const fs = require('fs');
 
@@ -48,45 +48,100 @@ it ('deve retornar um array com informações quando o arquivo tiver links',() =
   });
 });
 
-// teste de diretório
+// teste de validar
 
-/* describe('readDirectory', () => {
-  it('deveria ler o diretório e retornar um array com os caminhos dos arquivos .md', (done) => {
-    const pathInput = 'C:/Users/twelve/Desktop/laboratorias/SAP010-md-links/src/mdtest';
+describe('validateLinks', () => {
+  it('deve validar links corretamente', (done) => {
+    const mockArrayLinks = [
+      { url: 'http://example.com', text: 'Exemplo 1' },
+      { url: 'http://invalid-url', text: 'Link Inválido' }
+    ];
 
-    // Mock da função lerArquivos para retornar uma promessa resolvida
-    jest.mock('../src/arquivos/arquivo.md', () => ({
-      lerArquivos: (caminho) => Promise.resolve(caminho),
-    }));
+    const mockResponseSuccess = {
+      status: 200,
+      ok: true
+    };
 
-    lerDiretorioMd(pathInput)
-      .then((files) => {
-        expect(Array.isArray(files)).toBe(true);
+    const mockResponseFail = {
+      status: 404,
+      ok: false
+    };
 
-        // Verifica se todos os arquivos retornados têm a extensão .md
-        files.forEach((file) => {
-          expect(path.extname(file)).toBe('.md');
-        });
+    // Mock do fetch para retornar a resposta desejada
+    const fetchMock = jest.fn((url) => {
+      if (url === 'http://example.com') {
+        return Promise.resolve(mockResponseSuccess);
+      } else {
+        return Promise.reject(mockResponseFail);
+      }
+    });
 
-        done();
-      })
-      .catch((error) => {
-        done(error);
-      });
-  });
+    global.fetch = fetchMock;
 
-  it('deveria mostrar uma mensagem de erro caso ocorra um erro ao ler o diretório', (done) => {
-    const pathInput = 'C:/Caminho/falso';
-
-    lerDiretorioMd(pathInput)
-      .then(() => {
-        done(new Error('Esperava-se um erro, mas a promessa foi resolvida.'));
-      })
-      .catch((error) => {
-        expect(error).toMatch('Erro ao ler o diretório');
-        done();
-      });
+    validateLinks(mockArrayLinks).then((result) => {
+      expect(result).toEqual([
+        { url: 'http://example.com', text: 'Exemplo 1', status: 200, ok: 'ok' },
+        { url: 'http://invalid-url', text: 'Link Inválido', status: 404, ok: 'fail' }
+      ]);
+      done();
+    }).catch(done.fail);
   });
 });
 
+
+
+// Teste mdLinks
+
+ /* describe('mdLinks', () => {
+  it('deve retornar links de um arquivo corretamente', (done) => {
+    const filePath = '../src/arquivos/arquivo.md'; // Substitua pelo caminho do arquivo que você quer testar
+
+    mdLinks(filePath, { validate: false, stats: false }).then((result) => {
+      expect(result).toEqual([
+        { text: 'Link 1', url: 'http://example.com/link1.md', file: filePath },
+        { text: 'Link 2', url: 'http://example.com/link2.md', file: filePath }
+        // Adicione mais links conforme necessário
+      ]);
+      done();
+    }).catch(done.fail);
+  });
+
+  it('deve retornar estatísticas de links corretamente', (done) => {
+    const filePath = '../src/arquivos/arquivo.md'; // Substitua pelo caminho do arquivo que você quer testar
+
+    mdLinks(filePath, { validate: false, stats: true }).then((result) => {
+      expect(result).toEqual({
+        totalLinks: 6, // Substitua pelo número correto de links no arquivo
+        uniqueLinks: 5 // Substitua pelo número correto de links únicos no arquivo
+      });
+      done();
+    }).catch(done.fail);
+  });
+
+  it('deve retornar links validados corretamente', (done) => {
+    const filePath = '../src/arquivos/arquivo.md'; // Substitua pelo caminho do arquivo que você quer testar
+
+    mdLinks(filePath, { validate: true, stats: false }).then((result) => {
+      // Verifique se os links têm as propriedades status e ok conforme o resultado esperado
+      for (const link of result) {
+        expect(link).toHaveProperty('status');
+        expect(link).toHaveProperty('ok');
+      }
+      done();
+    }).catch(done.fail);
+  });
+
+  it('deve retornar estatísticas de links validados corretamente', (done) => {
+    const filePath = '../src/arquivos/arquivo.md'; // Substitua pelo caminho do arquivo que você quer testar
+
+    mdLinks(filePath, { validate: true, stats: true }).then((result) => {
+      expect(result).toEqual({
+        totalLinks: 6, // Substitua pelo número correto de links no arquivo
+        uniqueLinks: 5, // Substitua pelo número correto de links únicos no arquivo
+        totalBrokenLinks: 0 // Substitua pelo número correto de links quebrados no arquivo
+      });
+      done();
+    }).catch(done.fail);
+  });
+}); 
  */
