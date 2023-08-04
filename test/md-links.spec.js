@@ -38,6 +38,11 @@ it ('deve retornar um array com informações quando o arquivo tiver links',() =
         text: 'Microsoft',
         url: 'https://www.microsoft.com/pt-br',
         file: filePath,
+      },
+      {
+        text: 'Microsoft',
+        url: 'https://www.microsoft.com/pt-br',
+        file: filePath,
       }
      ]);
   });
