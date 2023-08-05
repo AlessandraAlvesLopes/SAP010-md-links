@@ -137,4 +137,4 @@ function mdLinks(path, options) {
   });
 }
 
-module.exports = { mdLinks, lerArquivos, lerDiretorioMd, validateLinks };
+module.exports = { mdLinks, lerArquivos, lerDiretorioMd, validateLinks, getStats };

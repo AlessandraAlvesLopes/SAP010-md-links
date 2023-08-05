@@ -1,4 +1,4 @@
-const {lerArquivos, lerDiretorioMd, validateLinks, mdLinks} = require('../src/index');
+const {lerArquivos, lerDiretorioMd, validateLinks, mdLinks, getStats} = require('../src/index');
 const path = require('path');
 const fs = require('fs');
 
@@ -88,7 +88,33 @@ describe('validateLinks', () => {
   });
 });
 
+//Teste getStats
 
+describe('getStats', () => {
+  it('Mostrar total de links e links únicos quando der o --stats', () => {
+    const mockArrayLinks = [
+      { url: 'https://www.google.com/' },
+      { url: 'https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:P%C3%A1gina_principal' },
+      { url: 'https://nodejs.org/en' },
+      { url: 'https://developer.mozilla.org/pt-BR/docs/Web/JavaScript' },
+      { url: 'https://www.microsoft.com/pt-br' },
+      { url: 'https://www.microsoft.com/pt-br' },
+    ];
+
+    const options = {
+      validate: false,
+      stats: true,
+    };
+
+    const result = {
+      totalLinks: 6,
+      uniqueLinks: 5,
+    };
+
+    const res = getStats(mockArrayLinks, options);
+    expect(res).toEqual(result);
+  });
+});
 
 // Teste mdLinks
 
