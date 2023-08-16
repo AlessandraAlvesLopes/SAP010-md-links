@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("fs").promises;
-const { mdLinks } = require("./index.js"); 
+const { mdLinks } = require("./index.js");
 const path = require("path");
 
 const caminhoDoArquivo = process.argv[2];
@@ -34,29 +34,30 @@ function print(options = { validate: true, stats: true }, result) {
     result.links.forEach(printLink);
   } else if (!options.validate && !options.stats) {
     console.log(result);
-  } 
-}
-
-async function run() {
-  try {
-    const stats = await fs.stat(caminhoAbsolutoDoArquivo);
-
-    if (stats.isDirectory()) {
-      console.error("O caminho informado é um diretório. Por favor, informe o caminho de um arquivo.");
-      process.exit(1);
-    }
-
-    const result = await mdLinks(caminhoAbsolutoDoArquivo, {
-      validate: isValidate,
-      stats: isStats
-    });
-
-    const opt = { validate: isValidate, stats: isStats };
-    print(opt, result);
-  } catch (error) {
-    console.error("Erro ao processar os links:");
-    console.error(error);
   }
 }
 
-run();
+function processarLinks() {
+  fs.stat(caminhoAbsolutoDoArquivo)
+    .then((stats) => {
+      if (stats.isDirectory()) {
+        console.error("O caminho informado é um diretório. Por favor, informe o caminho de um arquivo.");
+        process.exit(1);
+      }
+
+      return mdLinks(caminhoAbsolutoDoArquivo, {
+        validate: isValidate,
+        stats: isStats
+      });
+    })
+    .then((result) => {
+      const opt = { validate: isValidate, stats: isStats };
+      print(opt, result);
+    })
+    .catch((error) => {
+      console.error("Erro ao processar os links:");
+      console.error(error);
+    });
+}
+
+processarLinks();
