@@ -23,7 +23,7 @@ function lerArquivos(path) {
         file: path,
       }));
 
-      //console.log(linksEncontrados);
+      
       resolve(linksEncontrados);
     });
   });
@@ -41,7 +41,7 @@ function lerDiretorioMd(diretorio) {
         .filter((data) => data.endsWith(".md"))
         .map((data) => lerArquivos(path.join(diretorio, data)));
 
-      // console.log(listaArquivosMd);
+      
       resolve(listaArquivosMd);
     });
   });

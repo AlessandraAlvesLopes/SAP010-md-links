@@ -180,8 +180,7 @@ describe('mdLinks', () => {
 
   it('deve retornar os links de um arquivo individual corretamente', () => {
     return mdLinks(filePath).then((result) => {
-      // Faça as asserções necessárias para verificar o resultado
-      // Por exemplo, verifique se o resultado é uma array de objetos contendo as propriedades text, url e file
+      
       expect(Array.isArray(result)).toBe(true);
       result.forEach((link) => {
         expect(link).toHaveProperty('text');
@@ -199,7 +198,7 @@ describe('mdLinks', () => {
 
   it('deve retornar os links de um diretório corretamente', () => {
     return mdLinks(directoryPath).then((result) => {
-      // Faça as asserções necessárias para verificar o resultado
+      
     });
   });
 
@@ -207,7 +206,7 @@ describe('mdLinks', () => {
     const options = { validate: true };
 
     return mdLinks(directoryPath, options).then((result) => {
-      // Faça as asserções necessárias para verificar o resultado
+      
       
     });
   });
@@ -216,7 +215,7 @@ describe('mdLinks', () => {
     const options = { stats: true };
 
     return mdLinks(directoryPath, options).then((result) => {
-      // Faça as asserções necessárias para verificar o resultado
+      
     });
   });
 
@@ -224,7 +223,7 @@ describe('mdLinks', () => {
     const options = { stats: true };
 
     return mdLinks(filePath, options).then((result) => {
-      // Verifique se a saída está correta para este arquivo quando a opção "stats" é passada
+      
       expect(result).toHaveProperty('totalLinks', 6);
       expect(result).toHaveProperty('uniqueLinks', 5);
       
@@ -235,7 +234,7 @@ describe('mdLinks', () => {
     const options = { validate: true, stats: true };
 
     return mdLinks(directoryPath, options).then((result) => {
-      // Faça as asserções necessárias para verificar o resultado
+      
     });
   });
 
@@ -243,7 +242,7 @@ describe('mdLinks', () => {
     const options = { validate: true, stats: true };
   
     return mdLinks(filePath, options).then((result) => {
-      // Verifique se a saída está correta para este arquivo quando as opções "validate" e "stats" são passadas
+      
       expect(result.stats).toHaveProperty('totalLinks', 6);
       expect(result.stats).toHaveProperty('uniqueLinks', 5);
       expect(result.stats).toHaveProperty('totalBrokenLinks', 1); 
